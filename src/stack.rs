@@ -2,36 +2,44 @@ use std::fmt;
 
 pub struct Stack<T: fmt::Display, const SIZE: usize> {
     data: [Option<T>; SIZE],
-    pointer: usize,
+    top: isize,
 }
 
 impl<T: fmt::Display, const SIZE: usize> Stack<T, SIZE> {
     pub fn new() -> Self {
-        return Self{
+        return Self {
             data: [(); SIZE].map(|_| None),
-            pointer: 0,
+            top: -1,
         };
     }
 
     pub fn push(&mut self, value: T) -> Result<(), &'static str> {
-        if self.pointer == SIZE {
+        if self.top == (SIZE - 1) as isize {
             return Err("stack overflow");
         }
-        self.data[self.pointer] = Some(value);
-        self.pointer += 1;
+        self.top += 1;
+        self.data[self.top as usize] = Some(value);
         Ok(())
     }
 
-    // TODO: implement pop
+    pub fn pop(&mut self) -> Result<T, &'static str> {
+        if self.top == -1 {
+            return Err("stack underflow");
+        }
+        let idx = self.top as usize;
+        let val = self.data[idx].take();
+        self.top -= 1;
+        Ok(val.unwrap())
+    }
 }
 
 impl<T: fmt::Display, const SIZE: usize> fmt::Display for Stack<T, SIZE> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "[")?;
-        for i in 0..self.data.len() {
+        for i in 0..(self.top as usize + 1) {
             let elem = self.data[i].as_ref().unwrap();
             write!(f, "{}", elem)?;
-            if i != self.data.len()-1 {
+            if i != (self.top as usize) {
                 write!(f, ", ")?;
             }
         }
