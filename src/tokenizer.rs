@@ -2,7 +2,7 @@ use std::{fmt::Write, fs, io::Read};
 
 pub enum TokenTag {
     Operation, // such as add, push, print
-    StaticValueInt, 
+    StaticValueInt,
     StaticValueString,
 }
 
@@ -18,6 +18,10 @@ pub enum Token {
     ValueString(String),
 }
 
+const OpStrAdd: &'static str = "add";
+const OpStrPush: &'static str = "push";
+const OpStrPrint: &'static str = "print";
+
 pub type VecTokens = Vec<Token>;
 pub type ResultTokens = Result<VecTokens, &'static str>;
 
@@ -25,7 +29,7 @@ pub struct Tokenizer {}
 
 impl Tokenizer {
     pub fn new() -> Self {
-        return Self{};
+        return Self {};
     }
 
     pub fn tokenize_file(&self, path: &'static str) -> ResultTokens {
@@ -45,11 +49,7 @@ impl Tokenizer {
     pub fn tokenize_string(&self, content: &String) -> ResultTokens {
         let mut total_tokens = VecTokens::new();
         for line in content.lines() {
-            let mut line_str = String::new();
-            let _ = match line_str.write_str(line) {
-                Ok(n) => n,
-                Err(_) => return Err("failed to write string to line")
-            };
+            let line_str = String::from(line);
             let mut tokens = match self.tokenize_line(&line_str) {
                 Ok(t) => t,
                 Err(_) => return Err("failed to tokenize line"),
@@ -60,6 +60,33 @@ impl Tokenizer {
     }
 
     pub fn tokenize_line(&self, content: &String) -> ResultTokens {
-        Ok(VecTokens::new()) // TODO: implement tokenization
+        let mut tokens = VecTokens::new();
+        let split = content.split(" ");
+        for s in split {
+            let checked_token = String::from(s);
+            if checked_token.contains("\"") {
+                // TODO: validate that the string is closed by a quote as well
+                tokens.push(Token::ValueString(checked_token));
+                continue;
+            }
+            let _ = match checked_token.parse::<i32>() {
+                Ok(i) => {
+                    tokens.push(Token::ValueInt(i));
+                    continue;
+                }
+                Err(_) => {}
+            };
+            // this checks which operation is the token
+            if checked_token.eq(OpStrAdd) {
+                tokens.push(Token::Operation(Operation::Add));
+            } else if checked_token.eq(OpStrPrint) {
+                tokens.push(Token::Operation(Operation::Print));
+            } else if checked_token.eq(OpStrPush) {
+                tokens.push(Token::Operation(Operation::Push));
+            } else {
+                return Err("unrecognized operation");
+            }
+        }
+        Ok(tokens)
     }
 }
