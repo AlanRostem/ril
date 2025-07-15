@@ -1,16 +1,16 @@
 mod stack;
+mod tokenizer;
+mod parser;
 
-fn main() -> Result<(), ()> {
-    let mut s = stack::Stack::<i32, 4>::new();
-    let _ = s.push(1);
-    _ = s.push(2);
-    _ = s.push(3);
-    _ = s.push(4);
-    println!("Hello {}", s);
-    let res = s.pop();
-    println!("value popped: {}", res.unwrap());
-    println!("Hello {}", s);
+fn main() -> Result<(), &'static str> {
+    let t = tokenizer::Tokenizer::new();
+    let mut p = parser::Parser::new();
+    let tokens = match t.tokenize_file("testdata/main.ril") {
+        Ok(tks) => tks,
+        Err(_) => return Err("failed to tokenize file"),
+    };
+    if !p.parse(&tokens) {
+        std::println!("failed to parse tokens")
+    }
     Ok(())
 }
-
-
