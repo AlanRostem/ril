@@ -1,4 +1,9 @@
-push 20
-push 12
+push 0
+MAIN:
+print
+push 1
 add
+jump_if $STOP 5
+jump $MAIN
+STOP:
 print
