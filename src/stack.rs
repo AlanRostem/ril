@@ -1,5 +1,4 @@
 use std::fmt;
-
 pub struct Stack<T: fmt::Display, const SIZE: usize> {
     data: [Option<T>; SIZE],
     top: isize,
